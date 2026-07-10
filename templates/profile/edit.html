@@ -1,0 +1,133 @@
+{% extends "base.html" %}
+{% block title %}Edit Profile{% endblock %}
+
+{% block content %}
+<div class="page-wrapper py-4" style="max-width:800px;margin:auto">
+  <div class="text-center mb-5">
+    <div class="setup-step-icon mx-auto mb-3"><i class="fa-solid fa-user-pen"></i></div>
+    <h2 class="fw-bold">Edit Your Fitness Profile</h2>
+    <p class="text-muted">Update your information to get better personalised recommendations.</p>
+  </div>
+
+  <form method="POST" action="{{ url_for('profile.edit') }}">
+    <!-- Personal Info -->
+    <div class="fb-card mb-4">
+      <div class="fb-card-header"><h5 class="mb-0"><i class="fa-solid fa-person me-2 text-accent"></i>Personal Information</h5></div>
+      <div class="fb-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Full Name</label>
+            <input type="text" name="full_name" class="form-control fb-input" value="{{ profile.full_name or '' }}">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Date of Birth</label>
+            <input type="date" name="date_of_birth" class="form-control fb-input" value="{{ profile.date_of_birth or '' }}">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Gender</label>
+            <select name="gender" class="form-select fb-input">
+              <option value="">Select</option>
+              <option value="male"   {% if profile.gender == 'male' %}selected{% endif %}>Male</option>
+              <option value="female" {% if profile.gender == 'female' %}selected{% endif %}>Female</option>
+              <option value="other"  {% if profile.gender == 'other' %}selected{% endif %}>Other</option>
+            </select>
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label fw-medium">Height (cm)</label>
+            <input type="number" name="height_cm" class="form-control fb-input" value="{{ profile.height_cm or '' }}" step="0.1">
+          </div>
+          <div class="col-sm-3">
+            <label class="form-label fw-medium">Weight (kg)</label>
+            <input type="number" name="weight_kg" class="form-control fb-input" value="{{ profile.weight_kg or '' }}" step="0.1">
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Fitness Goals -->
+    <div class="fb-card mb-4">
+      <div class="fb-card-header"><h5 class="mb-0"><i class="fa-solid fa-bullseye me-2 text-accent"></i>Fitness Goals</h5></div>
+      <div class="fb-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Primary Goal</label>
+            <select name="fitness_goal" class="form-select fb-input">
+              <option value="">Select</option>
+              <option value="weight_loss"    {% if profile.fitness_goal == 'weight_loss' %}selected{% endif %}>Weight Loss</option>
+              <option value="muscle_gain"    {% if profile.fitness_goal == 'muscle_gain' %}selected{% endif %}>Muscle Gain</option>
+              <option value="maintenance"    {% if profile.fitness_goal == 'maintenance' %}selected{% endif %}>Maintenance</option>
+              <option value="endurance"      {% if profile.fitness_goal == 'endurance' %}selected{% endif %}>Endurance</option>
+              <option value="general_fitness"{% if profile.fitness_goal == 'general_fitness' %}selected{% endif %}>General Fitness</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Target Weight (kg)</label>
+            <input type="number" name="target_weight" class="form-control fb-input" value="{{ profile.target_weight or '' }}" step="0.1">
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Experience Level</label>
+            <select name="experience_level" class="form-select fb-input">
+              <option value="beginner"     {% if profile.experience_level == 'beginner' %}selected{% endif %}>Beginner</option>
+              <option value="intermediate" {% if profile.experience_level == 'intermediate' %}selected{% endif %}>Intermediate</option>
+              <option value="advanced"     {% if profile.experience_level == 'advanced' %}selected{% endif %}>Advanced</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Workout Days / Week</label>
+            <select name="workout_days_per_week" class="form-select fb-input">
+              {% for d in range(1, 8) %}
+              <option value="{{ d }}" {% if profile.workout_days_per_week == d %}selected{% endif %}>{{ d }} day{{ 's' if d > 1 }}</option>
+              {% endfor %}
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Lifestyle -->
+    <div class="fb-card mb-4">
+      <div class="fb-card-header"><h5 class="mb-0"><i class="fa-solid fa-leaf me-2 text-accent"></i>Lifestyle & Diet</h5></div>
+      <div class="fb-card-body">
+        <div class="row g-3">
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Activity Level</label>
+            <select name="activity_level" class="form-select fb-input">
+              <option value="sedentary"  {% if profile.activity_level == 'sedentary' %}selected{% endif %}>Sedentary</option>
+              <option value="lightly"    {% if profile.activity_level == 'lightly' %}selected{% endif %}>Lightly Active</option>
+              <option value="moderately" {% if profile.activity_level == 'moderately' %}selected{% endif %}>Moderately Active</option>
+              <option value="very"       {% if profile.activity_level == 'very' %}selected{% endif %}>Very Active</option>
+              <option value="extra"      {% if profile.activity_level == 'extra' %}selected{% endif %}>Extremely Active</option>
+            </select>
+          </div>
+          <div class="col-sm-6">
+            <label class="form-label fw-medium">Diet Preference</label>
+            <select name="diet_preference" class="form-select fb-input">
+              <option value="">Select</option>
+              <option value="vegetarian" {% if profile.diet_preference == 'vegetarian' %}selected{% endif %}>Vegetarian</option>
+              <option value="non_veg"    {% if profile.diet_preference == 'non_veg' %}selected{% endif %}>Non-Vegetarian</option>
+              <option value="vegan"      {% if profile.diet_preference == 'vegan' %}selected{% endif %}>Vegan</option>
+              <option value="eggetarian" {% if profile.diet_preference == 'eggetarian' %}selected{% endif %}>Eggetarian</option>
+              <option value="jain"       {% if profile.diet_preference == 'jain' %}selected{% endif %}>Jain</option>
+            </select>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-medium">Medical Conditions / Injuries</label>
+            <textarea name="medical_conditions" class="form-control fb-input" rows="2">{{ profile.medical_conditions or '' }}</textarea>
+          </div>
+          <div class="col-12">
+            <label class="form-label fw-medium">Available Equipment</label>
+            <textarea name="equipment_available" class="form-control fb-input" rows="2">{{ profile.equipment_available or '' }}</textarea>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="d-flex gap-3">
+      <a href="{{ url_for('profile.view') }}" class="btn btn-outline-secondary btn-fb">Cancel</a>
+      <button type="submit" class="btn btn-primary btn-fb flex-grow-1">
+        <i class="fa-solid fa-check me-2"></i>Save Changes
+      </button>
+    </div>
+  </form>
+</div>
+{% endblock %}

@@ -1,0 +1,184 @@
+{% extends "base.html" %}
+{% block title %}Nutrition{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="page-title mb-1"><i class="fa-solid fa-utensils me-2 text-accent"></i>Nutrition Tracker</h1>
+      <p class="text-muted">Track your meals and get personalised Indian diet plans</p>
+    </div>
+    <a href="{{ url_for('chat.index') }}" class="btn btn-primary btn-fb gap-2 d-none d-md-flex align-items-center">
+      <i class="fa-solid fa-robot"></i> AI Meal Plan
+    </a>
+  </div>
+
+  <!-- Macro Overview -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="macro-card">
+        <div class="macro-icon bg-orange-light"><i class="fa-solid fa-fire text-orange"></i></div>
+        <div class="macro-value">{{ total_calories }}</div>
+        <div class="macro-label">Calories</div>
+        <div class="progress macro-progress mt-2">
+          <div class="progress-bar bg-orange" style="width:{{ [total_calories/calorie_goal*100, 100]|min | round }}%"></div>
+        </div>
+        <div class="macro-goal small">Goal: {{ calorie_goal }}</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="macro-card">
+        <div class="macro-icon bg-blue-light"><i class="fa-solid fa-egg text-primary"></i></div>
+        <div class="macro-value">{{ total_protein }}g</div>
+        <div class="macro-label">Protein</div>
+        <div class="progress macro-progress mt-2">
+          <div class="progress-bar bg-primary" style="width:{{ [total_protein/(calorie_goal*0.3/4)*100, 100]|min | round }}%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="macro-card">
+        <div class="macro-icon bg-yellow-light"><i class="fa-solid fa-wheat-awn text-warning"></i></div>
+        <div class="macro-value">{{ total_carbs }}g</div>
+        <div class="macro-label">Carbs</div>
+        <div class="progress macro-progress mt-2">
+          <div class="progress-bar bg-warning" style="width:{{ [total_carbs/(calorie_goal*0.5/4)*100, 100]|min | round }}%"></div>
+        </div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="macro-card">
+        <div class="macro-icon bg-green-light"><i class="fa-solid fa-droplet text-success"></i></div>
+        <div class="macro-value">{{ total_fat }}g</div>
+        <div class="macro-label">Fat</div>
+        <div class="progress macro-progress mt-2">
+          <div class="progress-bar bg-success" style="width:{{ [total_fat/(calorie_goal*0.25/9)*100, 100]|min | round }}%"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="row g-4">
+    <!-- Log Meal -->
+    <div class="col-lg-5">
+      <div class="fb-card">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-plus-circle me-2 text-accent"></i>Log a Meal</h5>
+        </div>
+        <div class="fb-card-body">
+          <form id="mealForm">
+            <div class="mb-3">
+              <label class="form-label fw-medium">Meal Type</label>
+              <div class="d-flex gap-2 flex-wrap">
+                {% for meal in ['breakfast', 'lunch', 'dinner', 'snack'] %}
+                <label class="meal-type-btn">
+                  <input type="radio" name="meal_type" value="{{ meal }}" {% if loop.first %}checked{% endif %}>
+                  <span>{{ meal | capitalize }}</span>
+                </label>
+                {% endfor %}
+              </div>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Food Items</label>
+              <input type="text" class="form-control fb-input" name="food_items" placeholder="e.g. Dal rice, 2 rotis, sabzi">
+            </div>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-medium">Calories (kcal)</label>
+                <input type="number" class="form-control fb-input" name="calories" min="0" placeholder="350">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Protein (g)</label>
+                <input type="number" class="form-control fb-input" name="protein_g" min="0" placeholder="15" step="0.1">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Carbs (g)</label>
+                <input type="number" class="form-control fb-input" name="carbs_g" min="0" placeholder="45" step="0.1">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Fat (g)</label>
+                <input type="number" class="form-control fb-input" name="fat_g" min="0" placeholder="8" step="0.1">
+              </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-fb w-100">
+              <i class="fa-solid fa-plus me-2"></i>Add Meal
+            </button>
+          </form>
+          <div id="mealLogFeedback" class="mt-2"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Today's meals + AI plans -->
+    <div class="col-lg-7">
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-calendar-day me-2 text-accent"></i>Today's Meals</h5>
+        </div>
+        <div class="fb-card-body p-0">
+          {% if today_meals %}
+            <ul class="meal-log-list">
+              {% for meal in today_meals %}
+              <li class="meal-log-item">
+                <span class="meal-badge meal-{{ meal.meal_type }}">{{ meal.meal_type | capitalize }}</span>
+                <div class="flex-grow-1">
+                  <div class="fw-medium">{{ meal.food_items | replace('[', '') | replace(']', '') | replace('"', '') }}</div>
+                  <div class="small text-muted">{{ meal.calories | int }} kcal · P {{ meal.protein_g | round(1) }}g · C {{ meal.carbs_g | round(1) }}g · F {{ meal.fat_g | round(1) }}g</div>
+                </div>
+              </li>
+              {% endfor %}
+            </ul>
+          {% else %}
+            <div class="text-center py-5">
+              <i class="fa-solid fa-bowl-food fa-3x text-muted mb-3"></i>
+              <p class="text-muted">No meals logged today.</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Indian Meal Plan AI Prompts -->
+      <div class="fb-card">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-robot me-2 text-accent"></i>Indian Meal Plans</h5>
+        </div>
+        <div class="fb-card-body d-flex flex-column gap-2">
+          {% set meal_prompts = [
+            ("7-Day Weight Loss (Veg)", "Create a 7-day Indian vegetarian meal plan for weight loss under 1500 calories per day."),
+            ("High-Protein Non-Veg Plan", "Create a high-protein non-vegetarian Indian meal plan for muscle building."),
+            ("Vegan Indian Diet Plan", "Create a 7-day vegan Indian meal plan with complete protein sources."),
+            ("Budget Muscle-Gain Plan", "Create an affordable high-protein Indian meal plan for muscle gain under ₹200/day."),
+            ("Diabetic-Friendly Indian Diet", "Suggest a diabetic-friendly Indian meal plan with low glycemic index foods."),
+          ] %}
+          {% for label, prompt in meal_prompts %}
+          <a href="{{ url_for('chat.index') }}?prompt={{ prompt | urlencode }}" class="btn btn-outline-accent text-start">
+            <i class="fa-solid fa-bowl-rice me-2"></i>{{ label }}
+          </a>
+          {% endfor %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  document.getElementById("mealForm").addEventListener("submit", async function(e) {
+    e.preventDefault();
+    const fd = new FormData(this);
+    const data = Object.fromEntries(fd);
+    data.food_items = [data.food_items];
+    const res = await fetch("/nutrition/log", {
+      method: "POST",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify(data),
+    });
+    const json = await res.json();
+    const fb = document.getElementById("mealLogFeedback");
+    if (json.success) {
+      fb.innerHTML = '<div class="alert alert-success py-2">Meal logged! 🥗</div>';
+      this.reset();
+      setTimeout(() => { fb.innerHTML = ""; location.reload(); }, 1500);
+    }
+  });
+</script>
+{% endblock %}

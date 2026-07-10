@@ -1,0 +1,247 @@
+{% extends "base.html" %}
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <!-- Page Header -->
+  <div class="page-header d-flex align-items-center justify-content-between mb-4">
+    <div>
+      <h1 class="page-title mb-1">Good {{ 'Morning' if now_hour < 12 else ('Afternoon' if now_hour < 17 else 'Evening') }}, {{ current_user.username }}! 👋</h1>
+      <p class="text-muted">Here's your fitness summary for today</p>
+    </div>
+    <a href="{{ url_for('chat.index') }}" class="btn btn-primary btn-fb d-none d-md-flex gap-2 align-items-center">
+      <i class="fa-solid fa-robot"></i> Ask AI Coach
+    </a>
+  </div>
+
+  <!-- ── Stat Cards Row ── -->
+  <div class="row g-3 mb-4">
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gradient-orange">
+        <div class="stat-icon"><i class="fa-solid fa-fire"></i></div>
+        <div class="stat-value">{{ calories_burned }}</div>
+        <div class="stat-label">Calories Burned</div>
+        <div class="stat-sub">Today</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gradient-green">
+        <div class="stat-icon"><i class="fa-solid fa-utensils"></i></div>
+        <div class="stat-value">{{ calories_consumed }}</div>
+        <div class="stat-label">Calories Consumed</div>
+        <div class="stat-sub">Today</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gradient-blue">
+        <div class="stat-icon"><i class="fa-solid fa-droplet"></i></div>
+        <div class="stat-value">{{ (water_ml / 1000) | round(1) }}L</div>
+        <div class="stat-label">Water Intake</div>
+        <div class="stat-sub">Goal: {{ (water_goal / 1000) | round(1) }}L</div>
+      </div>
+    </div>
+    <div class="col-6 col-lg-3">
+      <div class="stat-card gradient-purple">
+        <div class="stat-icon"><i class="fa-solid fa-bolt"></i></div>
+        <div class="stat-value">{{ streak }}</div>
+        <div class="stat-label">Day Streak</div>
+        <div class="stat-sub">Keep it up! 🔥</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Main Content Grid ── -->
+  <div class="row g-4">
+
+    <!-- Left column -->
+    <div class="col-lg-8">
+
+      <!-- BMI & Profile Card -->
+      {% if profile and profile.bmi %}
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-weight-scale me-2 text-accent"></i>Your Health Metrics</h5>
+          <a href="{{ url_for('calculators.index') }}" class="btn btn-sm btn-outline-accent">View All</a>
+        </div>
+        <div class="fb-card-body">
+          <div class="row g-4">
+            <div class="col-sm-4 text-center">
+              <div class="bmi-circle {% if profile.bmi < 18.5 %}bmi-under{% elif profile.bmi < 25 %}bmi-normal{% elif profile.bmi < 30 %}bmi-over{% else %}bmi-obese{% endif %}">
+                <div class="bmi-value">{{ profile.bmi }}</div>
+                <div class="bmi-label">BMI</div>
+              </div>
+              <div class="mt-2 fw-semibold">{{ profile.bmi_category }}</div>
+            </div>
+            <div class="col-sm-8">
+              <div class="row g-3">
+                <div class="col-6">
+                  <div class="metric-item">
+                    <i class="fa-solid fa-weight text-muted"></i>
+                    <div>
+                      <div class="metric-value">{{ profile.weight_kg }} kg</div>
+                      <div class="metric-label">Current Weight</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-item">
+                    <i class="fa-solid fa-bullseye text-muted"></i>
+                    <div>
+                      <div class="metric-value">{{ profile.target_weight or '—' }} kg</div>
+                      <div class="metric-label">Target Weight</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-item">
+                    <i class="fa-solid fa-fire text-muted"></i>
+                    <div>
+                      <div class="metric-value">{{ profile.tdee() or '—' }}</div>
+                      <div class="metric-label">Daily TDEE</div>
+                    </div>
+                  </div>
+                </div>
+                <div class="col-6">
+                  <div class="metric-item">
+                    <i class="fa-solid fa-heart-pulse text-muted"></i>
+                    <div>
+                      <div class="metric-value">{{ profile.bmr() or '—' }}</div>
+                      <div class="metric-label">BMR</div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {% endif %}
+
+      <!-- Weight Progress Chart -->
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-chart-line me-2 text-accent"></i>Weight Progress</h5>
+          <select class="form-select form-select-sm w-auto" id="weightChartRange">
+            <option value="30">30 Days</option>
+            <option value="60">60 Days</option>
+            <option value="90">90 Days</option>
+          </select>
+        </div>
+        <div class="fb-card-body">
+          <canvas id="weightChart" height="100"></canvas>
+        </div>
+      </div>
+
+      <!-- Weekly Calorie Chart -->
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-chart-bar me-2 text-accent"></i>Weekly Calories</h5>
+        </div>
+        <div class="fb-card-body">
+          <canvas id="calorieChart" height="100"></canvas>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- Right column -->
+    <div class="col-lg-4">
+
+      <!-- Water Intake Tracker -->
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-droplet me-2 text-accent"></i>Water Intake</h5>
+        </div>
+        <div class="fb-card-body text-center">
+          <div class="water-tracker" id="waterTracker">
+            <div class="water-circle-wrap">
+              <svg viewBox="0 0 100 100" class="water-svg">
+                <circle class="water-track" cx="50" cy="50" r="40"/>
+                <circle class="water-fill" cx="50" cy="50" r="40" id="waterCircle"
+                  stroke-dasharray="251.2"
+                  stroke-dashoffset="{{ 251.2 - (251.2 * [water_ml / water_goal, 1.0] | min) }}"/>
+              </svg>
+              <div class="water-text">
+                <div class="water-ml" id="waterMl">{{ water_ml }}</div>
+                <div class="water-unit">ml</div>
+              </div>
+            </div>
+            <div class="mt-2 text-muted small">Goal: <span id="waterGoalDisplay">{{ water_goal }}</span> ml</div>
+          </div>
+
+          <div class="d-flex gap-2 justify-content-center mt-3 flex-wrap">
+            <button class="btn btn-water" onclick="addWater(250)"><i class="fa-solid fa-droplet"></i> 250ml</button>
+            <button class="btn btn-water" onclick="addWater(500)"><i class="fa-solid fa-droplet"></i> 500ml</button>
+            <button class="btn btn-water" onclick="addWater(750)"><i class="fa-solid fa-droplet"></i> 750ml</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Today's Activity -->
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-calendar-day me-2 text-accent"></i>Today's Activity</h5>
+          <a href="{{ url_for('workout.index') }}" class="btn btn-sm btn-outline-accent">Log Workout</a>
+        </div>
+        <div class="fb-card-body">
+          {% if today_workouts %}
+            {% for w in today_workouts %}
+            <div class="activity-item">
+              <div class="activity-icon bg-orange-light"><i class="fa-solid fa-dumbbell text-orange"></i></div>
+              <div class="flex-grow-1">
+                <div class="fw-medium">{{ w.workout_type }}</div>
+                <div class="small text-muted">{{ w.duration_minutes }} min · {{ w.calories_burned | int }} kcal</div>
+              </div>
+              <span class="badge bg-success-light text-success">Done</span>
+            </div>
+            {% endfor %}
+          {% else %}
+            <div class="text-center py-3">
+              <i class="fa-solid fa-dumbbell fa-2x text-muted mb-2"></i>
+              <p class="text-muted mb-2 small">No workouts logged today</p>
+              <a href="{{ url_for('chat.index') }}" class="btn btn-sm btn-primary">Get a workout plan</a>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick Log Weight -->
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-weight-scale me-2 text-accent"></i>Log Weight</h5>
+        </div>
+        <div class="fb-card-body">
+          <div class="input-group">
+            <input type="number" class="form-control" id="weightInput" placeholder="kg" step="0.1" min="20" max="300">
+            <button class="btn btn-primary" onclick="logWeight()">Log</button>
+          </div>
+          <div id="weightLogFeedback" class="mt-2 small"></div>
+        </div>
+      </div>
+
+      <!-- AI Coach Quick Access -->
+      <div class="fb-card ai-cta-card">
+        <div class="fb-card-body text-center py-4">
+          <div class="ai-cta-icon mb-3"><i class="fa-solid fa-robot"></i></div>
+          <h5 class="fw-bold mb-2">Ask Your AI Coach</h5>
+          <p class="text-muted small mb-3">Get personalised workout plans, meal plans, and fitness advice powered by IBM Granite.</p>
+          <a href="{{ url_for('chat.index') }}" class="btn btn-primary btn-fb w-100">
+            <i class="fa-solid fa-comments me-2"></i>Start Chatting
+          </a>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ── Chart Data from Flask ─────────────────────────────────
+  const weightLabels = {{ weight_labels | tojson }};
+  const weightData   = {{ weight_data   | tojson }};
+  const calLabels    = {{ weekly_cal_labels | tojson }};
+  const calData      = {{ weekly_cal_data   | tojson }};
+
+  const nowHour = new Date().getHours();
+</script>
+{% endblock %}

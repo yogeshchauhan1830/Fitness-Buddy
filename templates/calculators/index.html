@@ -1,0 +1,303 @@
+{% extends "base.html" %}
+{% block title %}Fitness Calculators{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-header mb-4">
+    <h1 class="page-title mb-1"><i class="fa-solid fa-calculator me-2 text-accent"></i>Fitness Calculators</h1>
+    <p class="text-muted">Calculate your BMI, BMR, TDEE, water intake, and macronutrients</p>
+  </div>
+
+  <!-- Calculator Nav Tabs -->
+  <ul class="nav nav-pills calc-tabs mb-4 flex-nowrap overflow-auto" id="calcTabs">
+    <li class="nav-item"><button class="nav-link active" data-calc="bmi">BMI</button></li>
+    <li class="nav-item"><button class="nav-link" data-calc="bmr">BMR</button></li>
+    <li class="nav-item"><button class="nav-link" data-calc="tdee">TDEE</button></li>
+    <li class="nav-item"><button class="nav-link" data-calc="water">Water</button></li>
+    <li class="nav-item"><button class="nav-link" data-calc="macros">Macros</button></li>
+  </ul>
+
+  <!-- ── BMI Calculator ── -->
+  <div class="calc-panel" id="calc-bmi">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="fb-card">
+          <div class="fb-card-header"><h5 class="mb-0">Body Mass Index (BMI)</h5></div>
+          <div class="fb-card-body">
+            <p class="text-muted small mb-3">BMI is a measure of body fat based on height and weight.</p>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Weight (kg)</label>
+              <input type="number" class="form-control fb-input" id="bmiWeight" placeholder="e.g. 70" step="0.1">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Height (cm)</label>
+              <input type="number" class="form-control fb-input" id="bmiHeight" placeholder="e.g. 175" step="0.1">
+            </div>
+            <button class="btn btn-primary btn-fb w-100" onclick="calculateBMI()">
+              <i class="fa-solid fa-calculator me-2"></i>Calculate BMI
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="fb-card" id="bmiResult" style="display:none">
+          <div class="fb-card-header"><h5 class="mb-0">Your BMI Result</h5></div>
+          <div class="fb-card-body text-center">
+            <div class="bmi-circle-lg" id="bmiCircle">
+              <div class="bmi-value-lg" id="bmiVal">—</div>
+              <div class="bmi-label-sm">BMI</div>
+            </div>
+            <h4 class="mt-3 fw-bold" id="bmiCategory"></h4>
+            <div class="row g-3 mt-3 text-start">
+              <div class="col-6"><div class="metric-box"><div class="metric-box-label">Ideal Weight Range</div><div class="metric-box-val" id="bmiIdeal">—</div></div></div>
+              <div class="col-6"><div class="metric-box"><div class="metric-box-label" id="bmiActionLabel">Weight to Lose</div><div class="metric-box-val" id="bmiAction">—</div></div></div>
+            </div>
+            <!-- BMI Scale Bar -->
+            <div class="bmi-scale mt-4">
+              <div class="bmi-scale-bar">
+                <div class="bmi-range under">Underweight<br>&lt;18.5</div>
+                <div class="bmi-range normal">Normal<br>18.5–24.9</div>
+                <div class="bmi-range over">Overweight<br>25–29.9</div>
+                <div class="bmi-range obese">Obese<br>≥30</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── BMR Calculator ── -->
+  <div class="calc-panel d-none" id="calc-bmr">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="fb-card">
+          <div class="fb-card-header"><h5 class="mb-0">Basal Metabolic Rate (BMR)</h5></div>
+          <div class="fb-card-body">
+            <p class="text-muted small mb-3">BMR is the number of calories your body burns at complete rest (Mifflin-St Jeor formula).</p>
+            <div class="row g-3 mb-3">
+              <div class="col-6">
+                <label class="form-label fw-medium">Weight (kg)</label>
+                <input type="number" class="form-control fb-input" id="bmrWeight" placeholder="70">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Height (cm)</label>
+                <input type="number" class="form-control fb-input" id="bmrHeight" placeholder="175">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Age (years)</label>
+                <input type="number" class="form-control fb-input" id="bmrAge" placeholder="25">
+              </div>
+              <div class="col-6">
+                <label class="form-label fw-medium">Gender</label>
+                <select class="form-select fb-input" id="bmrGender">
+                  <option value="male">Male</option>
+                  <option value="female">Female</option>
+                </select>
+              </div>
+            </div>
+            <button class="btn btn-primary btn-fb w-100" onclick="calculateBMR()">
+              <i class="fa-solid fa-calculator me-2"></i>Calculate BMR
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="fb-card" id="bmrResult" style="display:none">
+          <div class="fb-card-header"><h5 class="mb-0">Your BMR Result</h5></div>
+          <div class="fb-card-body text-center">
+            <div class="result-big-number text-accent" id="bmrVal">—</div>
+            <div class="text-muted mb-4">calories/day at rest</div>
+            <div class="result-info-box">
+              <i class="fa-solid fa-circle-info text-accent me-2"></i>
+              This is the minimum calories your body needs to maintain vital functions. Do not eat below this number.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── TDEE Calculator ── -->
+  <div class="calc-panel d-none" id="calc-tdee">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="fb-card">
+          <div class="fb-card-header"><h5 class="mb-0">Total Daily Energy Expenditure</h5></div>
+          <div class="fb-card-body">
+            <p class="text-muted small mb-3">TDEE is the total calories you burn per day including activity.</p>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Your BMR (calories/day)</label>
+              <input type="number" class="form-control fb-input" id="tdeeBMR" placeholder="1700">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Activity Level</label>
+              <select class="form-select fb-input" id="tdeeActivity">
+                <option value="sedentary">Sedentary (desk job, little exercise)</option>
+                <option value="lightly" selected>Lightly active (1–3 days/week)</option>
+                <option value="moderately">Moderately active (3–5 days/week)</option>
+                <option value="very">Very active (6–7 days/week)</option>
+                <option value="extra">Extra active (athlete / physical job)</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-fb w-100" onclick="calculateTDEE()">
+              <i class="fa-solid fa-calculator me-2"></i>Calculate TDEE
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="fb-card" id="tdeeResult" style="display:none">
+          <div class="fb-card-header"><h5 class="mb-0">Your TDEE & Calorie Goals</h5></div>
+          <div class="fb-card-body">
+            <div class="row g-3">
+              <div class="col-4 text-center">
+                <div class="tdee-goal-card tdee-loss">
+                  <div class="tdee-goal-val" id="tdeeLoss">—</div>
+                  <div class="tdee-goal-label">Weight Loss<br><small>-500 kcal/day</small></div>
+                </div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="tdee-goal-card tdee-maint active-card">
+                  <div class="tdee-goal-val" id="tdeeMaint">—</div>
+                  <div class="tdee-goal-label">Maintenance<br><small>Stay same weight</small></div>
+                </div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="tdee-goal-card tdee-gain">
+                  <div class="tdee-goal-val" id="tdeeGain">—</div>
+                  <div class="tdee-goal-label">Weight Gain<br><small>+300 kcal/day</small></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Water Intake Calculator ── -->
+  <div class="calc-panel d-none" id="calc-water">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="fb-card">
+          <div class="fb-card-header"><h5 class="mb-0">Daily Water Intake</h5></div>
+          <div class="fb-card-body">
+            <div class="mb-3">
+              <label class="form-label fw-medium">Weight (kg)</label>
+              <input type="number" class="form-control fb-input" id="waterWeight" placeholder="70">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Activity Level</label>
+              <select class="form-select fb-input" id="waterActivity">
+                <option value="sedentary">Sedentary</option>
+                <option value="lightly" selected>Lightly Active</option>
+                <option value="moderately">Moderately Active</option>
+                <option value="very">Very Active</option>
+                <option value="extra">Athlete</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Climate</label>
+              <select class="form-select fb-input" id="waterClimate">
+                <option value="normal">Normal / Temperate</option>
+                <option value="hot">Hot / Humid (India Summer)</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-fb w-100" onclick="calculateWater()">
+              <i class="fa-solid fa-droplet me-2"></i>Calculate Water Intake
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="fb-card" id="waterResult" style="display:none">
+          <div class="fb-card-header"><h5 class="mb-0">Your Water Intake Recommendation</h5></div>
+          <div class="fb-card-body text-center">
+            <div class="result-big-number text-accent" id="waterLiters">—</div>
+            <div class="text-muted mb-2">litres per day</div>
+            <div class="text-muted mb-4"><span id="waterGlasses">—</span> glasses (250ml each)</div>
+            <div class="result-info-box">
+              <i class="fa-solid fa-circle-info text-accent me-2"></i>
+              Increase intake during exercise, illness, or extreme heat. Drink water consistently throughout the day rather than all at once.
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Macro Calculator ── -->
+  <div class="calc-panel d-none" id="calc-macros">
+    <div class="row g-4">
+      <div class="col-lg-5">
+        <div class="fb-card">
+          <div class="fb-card-header"><h5 class="mb-0">Macronutrient Calculator</h5></div>
+          <div class="fb-card-body">
+            <div class="mb-3">
+              <label class="form-label fw-medium">Your TDEE (calories/day)</label>
+              <input type="number" class="form-control fb-input" id="macrosTDEE" placeholder="2200">
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Fitness Goal</label>
+              <select class="form-select fb-input" id="macrosGoal">
+                <option value="maintenance">Maintenance</option>
+                <option value="weight_loss">Weight Loss</option>
+                <option value="weight_gain">Muscle Gain</option>
+              </select>
+            </div>
+            <div class="mb-3">
+              <label class="form-label fw-medium">Diet Type</label>
+              <select class="form-select fb-input" id="macrosDiet">
+                <option value="balanced">Balanced</option>
+                <option value="high_protein">High Protein</option>
+                <option value="low_carb">Low Carb</option>
+                <option value="keto">Keto</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-fb w-100" onclick="calculateMacros()">
+              <i class="fa-solid fa-calculator me-2"></i>Calculate Macros
+            </button>
+          </div>
+        </div>
+      </div>
+      <div class="col-lg-7">
+        <div class="fb-card" id="macrosResult" style="display:none">
+          <div class="fb-card-header"><h5 class="mb-0">Your Daily Macros</h5></div>
+          <div class="fb-card-body">
+            <div class="text-center mb-3">
+              <div class="result-big-number text-accent" id="macrosCals">—</div>
+              <div class="text-muted">calories / day</div>
+            </div>
+            <div class="row g-3">
+              <div class="col-4 text-center">
+                <div class="macro-result-card protein">
+                  <div class="macro-result-val" id="macrosProtein">—g</div>
+                  <div class="macro-result-label">Protein</div>
+                  <div class="macro-result-sub">4 kcal/g</div>
+                </div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="macro-result-card carbs">
+                  <div class="macro-result-val" id="macrosCarbs">—g</div>
+                  <div class="macro-result-label">Carbs</div>
+                  <div class="macro-result-sub">4 kcal/g</div>
+                </div>
+              </div>
+              <div class="col-4 text-center">
+                <div class="macro-result-card fat">
+                  <div class="macro-result-val" id="macrosFat">—g</div>
+                  <div class="macro-result-label">Fat</div>
+                  <div class="macro-result-sub">9 kcal/g</div>
+                </div>
+              </div>
+            </div>
+            <canvas id="macroChart" class="mt-4" height="200"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>
+{% endblock %}

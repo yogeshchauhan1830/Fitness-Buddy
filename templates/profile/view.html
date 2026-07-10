@@ -1,0 +1,256 @@
+{% extends "base.html" %}
+{% block title %}My Profile{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-header mb-4">
+    <h1 class="page-title mb-1"><i class="fa-regular fa-user me-2 text-accent"></i>My Profile</h1>
+    <p class="text-muted">Manage your fitness profile and personal details</p>
+  </div>
+
+  <div class="row g-4">
+    <!-- Profile Card -->
+    <div class="col-lg-4">
+      <div class="fb-card text-center">
+        <div class="fb-card-body py-4">
+          <div class="profile-avatar mx-auto mb-3">
+            {{ current_user.username[0] | upper }}
+          </div>
+          <h4 class="fw-bold">
+            {% if profile and profile.full_name %}{{ profile.full_name }}{% else %}{{ current_user.username }}{% endif %}
+          </h4>
+          <p class="text-muted">{{ current_user.email }}</p>
+          <div class="d-flex justify-content-center gap-2 flex-wrap mb-3">
+            {% if profile and profile.fitness_goal %}
+            <span class="badge bg-accent-light text-accent">{{ profile.fitness_goal | replace('_', ' ') | title }}</span>
+            {% endif %}
+            {% if profile and profile.experience_level %}
+            <span class="badge bg-success-light text-success">{{ profile.experience_level | capitalize }}</span>
+            {% endif %}
+            {% if profile and profile.diet_preference %}
+            <span class="badge bg-warning-light text-warning">{{ profile.diet_preference | replace('_', ' ') | title }}</span>
+            {% endif %}
+          </div>
+          <a href="{{ url_for('profile.edit') }}" class="btn btn-primary btn-fb w-100">
+            <i class="fa-solid fa-pen me-2"></i>Edit Profile
+          </a>
+        </div>
+      </div>
+
+      <!-- Health Stats Card -->
+      {% if profile %}
+      <div class="fb-card mt-4">
+        <div class="fb-card-header"><h5 class="mb-0">Health Stats</h5></div>
+        <div class="fb-card-body">
+
+          {# Pre-compute values to avoid ternary-in-tuple Jinja2 limitations #}
+          {% set age_val    = (profile.age | string + ' years') if profile.age else '—' %}
+          {% set height_val = (profile.height_cm | string + ' cm') if profile.height_cm else '—' %}
+          {% set weight_val = (profile.weight_kg | string + ' kg') if profile.weight_kg else '—' %}
+          {% set target_val = (profile.target_weight | string + ' kg') if profile.target_weight else '—' %}
+          {% set bmi_val    = (profile.bmi | string + ' (' + profile.bmi_category + ')') if profile.bmi else '—' %}
+          {% set bmr_val    = (profile.bmr() | string + ' kcal') if profile.bmr() else '—' %}
+          {% set tdee_val   = (profile.tdee() | string + ' kcal') if profile.tdee() else '—' %}
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-cake-candles text-accent stat-icon-sm"></i>
+              <span class="text-muted">Age</span>
+            </div>
+            <span class="fw-semibold">{{ age_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-ruler-vertical text-accent stat-icon-sm"></i>
+              <span class="text-muted">Height</span>
+            </div>
+            <span class="fw-semibold">{{ height_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-weight-scale text-accent stat-icon-sm"></i>
+              <span class="text-muted">Weight</span>
+            </div>
+            <span class="fw-semibold">{{ weight_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-bullseye text-accent stat-icon-sm"></i>
+              <span class="text-muted">Target Weight</span>
+            </div>
+            <span class="fw-semibold">{{ target_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-heart-pulse text-accent stat-icon-sm"></i>
+              <span class="text-muted">BMI</span>
+            </div>
+            <span class="fw-semibold">{{ bmi_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-fire text-accent stat-icon-sm"></i>
+              <span class="text-muted">BMR</span>
+            </div>
+            <span class="fw-semibold">{{ bmr_val }}</span>
+          </div>
+
+          <div class="profile-stat-row">
+            <div class="d-flex align-items-center gap-2">
+              <i class="fa-solid fa-bolt text-accent stat-icon-sm"></i>
+              <span class="text-muted">TDEE</span>
+            </div>
+            <span class="fw-semibold">{{ tdee_val }}</span>
+          </div>
+
+        </div>
+      </div>
+      {% endif %}
+    </div>
+
+    <!-- Details Panel -->
+    <div class="col-lg-8">
+      {% if profile %}
+      <div class="fb-card mb-4">
+        <div class="fb-card-header">
+          <h5 class="mb-0">Fitness Details</h5>
+          <a href="{{ url_for('profile.edit') }}" class="btn btn-sm btn-outline-accent">Edit</a>
+        </div>
+        <div class="fb-card-body">
+          <div class="row g-3">
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Gender</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.gender %}{{ profile.gender | capitalize }}{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Activity Level</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.activity_level %}{{ profile.activity_level | replace('_', ' ') | title }}{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Fitness Goal</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.fitness_goal %}{{ profile.fitness_goal | replace('_', ' ') | title }}{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Diet Preference</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.diet_preference %}{{ profile.diet_preference | replace('_', ' ') | title }}{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Experience Level</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.experience_level %}{{ profile.experience_level | capitalize }}{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+              <div class="detail-item">
+                <div class="detail-label">Workout Days / Week</div>
+                <div class="detail-value fw-semibold">
+                  {% if profile.workout_days_per_week %}{{ profile.workout_days_per_week }} days{% else %}—{% endif %}
+                </div>
+              </div>
+            </div>
+
+          </div>
+
+          {% if profile.medical_conditions %}
+          <div class="mt-3">
+            <div class="detail-label">Medical Conditions / Injuries</div>
+            <div class="detail-value mt-1">{{ profile.medical_conditions }}</div>
+          </div>
+          {% endif %}
+
+          {% if profile.equipment_available %}
+          <div class="mt-3">
+            <div class="detail-label">Available Equipment</div>
+            <div class="detail-value mt-1">{{ profile.equipment_available }}</div>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Log Weight Panel -->
+      <div class="fb-card">
+        <div class="fb-card-header">
+          <h5 class="mb-0"><i class="fa-solid fa-weight-scale me-2 text-accent"></i>Log Today's Weight</h5>
+        </div>
+        <div class="fb-card-body">
+          <div class="row g-3">
+            <div class="col-sm-4">
+              <label class="form-label fw-medium">Weight (kg)</label>
+              <input type="number" class="form-control fb-input" id="profileWeight" placeholder="70.5" step="0.1" min="20" max="300">
+            </div>
+            <div class="col-sm-4">
+              <label class="form-label fw-medium">Body Fat % (optional)</label>
+              <input type="number" class="form-control fb-input" id="profileBodyFat" placeholder="20" step="0.1" min="1" max="60">
+            </div>
+            <div class="col-sm-4 d-flex align-items-end">
+              <button class="btn btn-primary btn-fb w-100" onclick="logProfileWeight()">
+                <i class="fa-solid fa-check me-2"></i>Log
+              </button>
+            </div>
+          </div>
+          <div id="profileWeightFeedback" class="mt-2"></div>
+        </div>
+      </div>
+
+      {% else %}
+      <div class="fb-card">
+        <div class="fb-card-body text-center py-5">
+          <i class="fa-solid fa-user-plus fa-3x text-muted mb-3 d-block"></i>
+          <h5>Profile not set up yet</h5>
+          <p class="text-muted">Set up your profile so FitGuru can personalise plans for you.</p>
+          <a href="{{ url_for('profile.setup') }}" class="btn btn-primary btn-fb">Set Up Profile</a>
+        </div>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+
+<script>
+  async function logProfileWeight() {
+    const weight  = parseFloat(document.getElementById("profileWeight").value);
+    const bodyFat = parseFloat(document.getElementById("profileBodyFat").value) || null;
+    if (!weight) { return; }
+    const res  = await fetch("/profile/weight/log", {
+      method : "POST",
+      headers: { "Content-Type": "application/json" },
+      body   : JSON.stringify({ weight_kg: weight, body_fat_pct: bodyFat }),
+    });
+    const json = await res.json();
+    const fb   = document.getElementById("profileWeightFeedback");
+    if (json.success) {
+      fb.innerHTML = '<div class="alert alert-success py-2">Weight logged! New BMI: ' + (json.new_bmi || "—") + '</div>';
+      setTimeout(() => { fb.innerHTML = ""; location.reload(); }, 2000);
+    }
+  }
+</script>
+{% endblock %}

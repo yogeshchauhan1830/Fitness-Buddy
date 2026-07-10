@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}Login{% endblock %}
+
+{% block content %}
+<div class="auth-page d-flex align-items-center justify-content-center min-vh-100">
+  <div class="auth-container">
+    <!-- Left panel -->
+    <div class="auth-hero d-none d-lg-flex flex-column justify-content-center p-5">
+      <div class="brand-icon-lg mb-4"><i class="fa-solid fa-dumbbell"></i></div>
+      <h1 class="display-5 fw-bold text-white mb-3">Your AI-Powered<br>Fitness Journey<br>Starts Here</h1>
+      <p class="text-white-75 mb-4 fs-5">Personalized workouts, Indian meal plans, and 24/7 AI coaching — all in one place.</p>
+      <div class="d-flex flex-column gap-3">
+        <div class="hero-feature"><i class="fa-solid fa-robot text-accent"></i><span>IBM Granite AI Coach</span></div>
+        <div class="hero-feature"><i class="fa-solid fa-utensils text-accent"></i><span>Indian Nutrition Plans</span></div>
+        <div class="hero-feature"><i class="fa-solid fa-chart-line text-accent"></i><span>Real-time Progress Tracking</span></div>
+        <div class="hero-feature"><i class="fa-solid fa-dumbbell text-accent"></i><span>Home & Gym Workouts</span></div>
+      </div>
+    </div>
+
+    <!-- Right panel — login form -->
+    <div class="auth-form-panel d-flex flex-column justify-content-center p-4 p-lg-5">
+      <div class="text-center mb-4 d-lg-none">
+        <div class="brand-icon mx-auto mb-3"><i class="fa-solid fa-dumbbell"></i></div>
+        <h2 class="fw-bold">FitnessBuddy</h2>
+      </div>
+      <h2 class="fw-bold mb-1">Welcome back! 👋</h2>
+      <p class="text-muted mb-4">Sign in to continue your fitness journey</p>
+
+      <form method="POST" action="{{ url_for('auth.login') }}" id="loginForm">
+        <div class="mb-3">
+          <label class="form-label fw-medium">Email Address</label>
+          <div class="input-group-fb">
+            <i class="fa-regular fa-envelope"></i>
+            <input type="email" name="email" class="form-control fb-input" placeholder="you@example.com" required autofocus>
+          </div>
+        </div>
+
+        <div class="mb-3">
+          <div class="d-flex justify-content-between">
+            <label class="form-label fw-medium">Password</label>
+          </div>
+          <div class="input-group-fb">
+            <i class="fa-solid fa-lock"></i>
+            <input type="password" name="password" class="form-control fb-input" id="loginPassword" placeholder="Enter your password" required>
+            <button type="button" class="btn-eye" onclick="togglePassword('loginPassword', this)"><i class="fa-regular fa-eye"></i></button>
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div class="form-check">
+            <input class="form-check-input" type="checkbox" name="remember_me" id="rememberMe">
+            <label class="form-check-label" for="rememberMe">Remember me</label>
+          </div>
+        </div>
+
+        <button type="submit" class="btn btn-primary btn-fb w-100 mb-3">
+          <i class="fa-solid fa-right-to-bracket me-2"></i>Sign In
+        </button>
+      </form>
+
+      <p class="text-center text-muted">
+        Don't have an account?
+        <a href="{{ url_for('auth.register') }}" class="text-accent fw-semibold">Create one free</a>
+      </p>
+    </div>
+  </div>
+</div>
+{% endblock %}

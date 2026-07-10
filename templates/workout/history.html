@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block title %}Workout History{% endblock %}
+
+{% block content %}
+<div class="page-wrapper">
+  <div class="page-header mb-4">
+    <h1 class="page-title mb-1"><i class="fa-solid fa-clock-rotate-left me-2 text-accent"></i>Workout History</h1>
+    <p class="text-muted">Your last 30 workout sessions</p>
+  </div>
+
+  <div class="fb-card">
+    <div class="fb-card-body p-0">
+      {% if logs %}
+      <div class="table-responsive">
+        <table class="table table-hover fb-table mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Type</th>
+              <th>Duration</th>
+              <th>Calories</th>
+              <th>Intensity</th>
+              <th>Notes</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for log in logs %}
+            <tr>
+              <td>{{ log.date.strftime('%d %b %Y') }}</td>
+              <td><span class="badge badge-workout">{{ log.workout_type }}</span></td>
+              <td>{{ log.duration_minutes }} min</td>
+              <td>{{ log.calories_burned | int }} kcal</td>
+              <td>
+                <span class="badge {% if log.intensity == 'high' %}bg-danger{% elif log.intensity == 'moderate' %}bg-warning{% else %}bg-success{% endif %}-subtle text-{{ 'danger' if log.intensity == 'high' else ('warning' if log.intensity == 'moderate' else 'success') }}">
+                  {{ log.intensity | capitalize }}
+                </span>
+              </td>
+              <td class="text-muted small">{{ log.notes or '—' }}</td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="text-center py-5">
+        <i class="fa-solid fa-dumbbell fa-3x text-muted mb-3 d-block"></i>
+        <p class="text-muted">No workouts logged yet.</p>
+        <a href="{{ url_for('workout.index') }}" class="btn btn-primary btn-fb">Log a Workout</a>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

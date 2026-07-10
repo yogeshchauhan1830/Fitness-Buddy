@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fitness Buddy{% endblock %} — AI Fitness Coach</title>
+
+  <!-- Bootstrap 5 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Font Awesome 6 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css" rel="stylesheet">
+  <!-- Google Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Poppins:wght@600;700;800&display=swap" rel="stylesheet">
+  <!-- Custom CSS -->
+  <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+  {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+<!-- ═══════════════════════════════ NAVBAR ═══════════════════════════════ -->
+<nav class="navbar navbar-expand-lg fb-navbar fixed-top">
+  <div class="container-fluid px-4">
+    <!-- Brand -->
+    <a class="navbar-brand fw-bold d-flex align-items-center gap-2" href="{{ url_for('dashboard.home') }}">
+      <div class="brand-icon"><i class="fa-solid fa-dumbbell"></i></div>
+      <span class="brand-text">Fitness<span class="text-accent">Buddy</span></span>
+    </a>
+
+    <!-- Mobile toggle -->
+    <button class="navbar-toggler border-0" type="button" data-bs-toggle="offcanvas" data-bs-target="#sidebarOffcanvas">
+      <i class="fa-solid fa-bars"></i>
+    </button>
+
+    <!-- Desktop right-side items -->
+    <div class="d-none d-lg-flex align-items-center gap-3 ms-auto">
+      <!-- Theme toggle -->
+      <button class="btn btn-icon theme-toggle" id="themeToggle" title="Toggle dark/light mode">
+        <i class="fa-solid fa-moon" id="themeIcon"></i>
+      </button>
+
+      {% if current_user.is_authenticated %}
+      <!-- Notifications -->
+      <button class="btn btn-icon position-relative" id="notifBtn" title="Notifications"
+              data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fa-solid fa-bell"></i>
+      </button>
+      <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2 p-2" style="min-width:280px">
+        <li class="dropdown-header fw-semibold pb-1">Notifications</li>
+        <li><hr class="dropdown-divider my-1"></li>
+        <li>
+          <div class="px-3 py-2 rounded-2 mb-1" style="background:var(--accent-light)">
+            <div class="fw-medium" style="font-size:13px">Welcome to Fitness Buddy! 🎉</div>
+            <div class="text-muted" style="font-size:12px">Set up your profile to get personalised AI plans.</div>
+          </div>
+        </li>
+        <li>
+          <div class="px-3 py-2 rounded-2 mb-1" style="background:var(--surface-2)">
+            <div class="fw-medium" style="font-size:13px">Log your first workout 💪</div>
+            <div class="text-muted" style="font-size:12px">Track your progress by logging workouts daily.</div>
+          </div>
+        </li>
+        <li>
+          <div class="px-3 py-2 rounded-2" style="background:var(--surface-2)">
+            <div class="fw-medium" style="font-size:13px">Ask FitGuru anything 🤖</div>
+            <div class="text-muted" style="font-size:12px">Your AI coach is ready — try the chat page!</div>
+          </div>
+        </li>
+      </ul>
+
+      <!-- User menu -->
+      <div class="dropdown">
+        <button class="btn d-flex align-items-center gap-2 user-btn" data-bs-toggle="dropdown">
+          <div class="user-avatar">
+            {{ (current_user.username[0] | upper) if current_user else 'U' }}
+          </div>
+          <span class="d-none d-xl-inline fw-medium">{{ current_user.username }}</span>
+          <i class="fa-solid fa-chevron-down small"></i>
+        </button>
+        <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 mt-2">
+          <li class="dropdown-header">
+            <div class="fw-semibold">{{ current_user.username }}</div>
+            <small class="text-muted">{{ current_user.email }}</small>
+          </li>
+          <li><hr class="dropdown-divider my-1"></li>
+          <li><a class="dropdown-item" href="{{ url_for('profile.view') }}"><i class="fa-regular fa-user me-2"></i>My Profile</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('dashboard.home') }}"><i class="fa-solid fa-chart-line me-2"></i>Dashboard</a></li>
+          <li><a class="dropdown-item" href="{{ url_for('chat.index') }}"><i class="fa-solid fa-robot me-2"></i>AI Coach</a></li>
+          <li><hr class="dropdown-divider my-1"></li>
+          <li><a class="dropdown-item text-danger" href="{{ url_for('auth.logout') }}"><i class="fa-solid fa-right-from-bracket me-2"></i>Logout</a></li>
+        </ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</nav>
+
+<!-- ═════════════════════════ SIDEBAR (desktop) ══════════════════════════ -->
+{% if current_user.is_authenticated %}
+<aside class="fb-sidebar d-none d-lg-flex flex-column" id="mainSidebar">
+  <nav class="sidebar-nav flex-grow-1 pt-2">
+
+    <div class="nav-section-label">MAIN</div>
+    <a href="{{ url_for('dashboard.home') }}"     class="nav-item {% if request.endpoint == 'dashboard.home' %}active{% endif %}">
+      <i class="fa-solid fa-house"></i><span>Dashboard</span>
+    </a>
+    <a href="{{ url_for('chat.index') }}"         class="nav-item {% if 'chat' in request.endpoint %}active{% endif %}">
+      <i class="fa-solid fa-robot"></i><span>AI Coach</span>
+      <span class="badge bg-accent ms-auto">AI</span>
+    </a>
+
+    <div class="nav-section-label mt-3">FITNESS</div>
+    <a href="{{ url_for('workout.index') }}"      class="nav-item {% if 'workout' in request.endpoint %}active{% endif %}">
+      <i class="fa-solid fa-dumbbell"></i><span>Workouts</span>
+    </a>
+    <a href="{{ url_for('nutrition.index') }}"    class="nav-item {% if 'nutrition' in request.endpoint %}active{% endif %}">
+      <i class="fa-solid fa-utensils"></i><span>Nutrition</span>
+    </a>
+    <a href="{{ url_for('calculators.index') }}"  class="nav-item {% if 'calculators' in request.endpoint %}active{% endif %}">
+      <i class="fa-solid fa-calculator"></i><span>Calculators</span>
+    </a>
+
+    <div class="nav-section-label mt-3">ACCOUNT</div>
+    <a href="{{ url_for('profile.view') }}"       class="nav-item {% if 'profile' in request.endpoint %}active{% endif %}">
+      <i class="fa-regular fa-user"></i><span>Profile</span>
+    </a>
+    <a href="{{ url_for('auth.logout') }}"        class="nav-item text-danger-nav">
+      <i class="fa-solid fa-right-from-bracket"></i><span>Logout</span>
+    </a>
+  </nav>
+
+  <div class="sidebar-footer">
+    <div class="ai-status {% if True %}online{% else %}offline{% endif %}">
+      <span class="status-dot"></span>
+      <span class="small">AI Engine Active</span>
+    </div>
+  </div>
+</aside>
+
+<!-- Mobile Offcanvas Sidebar -->
+<div class="offcanvas offcanvas-start fb-offcanvas" id="sidebarOffcanvas" tabindex="-1">
+  <div class="offcanvas-header">
+    <div class="d-flex align-items-center gap-2">
+      <div class="brand-icon small"><i class="fa-solid fa-dumbbell"></i></div>
+      <span class="fw-bold fs-5">Fitness<span class="text-accent">Buddy</span></span>
+    </div>
+    <button type="button" class="btn-close" data-bs-dismiss="offcanvas"></button>
+  </div>
+  <div class="offcanvas-body p-0">
+    <nav class="sidebar-nav">
+      <a href="{{ url_for('dashboard.home') }}"    class="nav-item">  <i class="fa-solid fa-house"></i>Dashboard</a>
+      <a href="{{ url_for('chat.index') }}"        class="nav-item">  <i class="fa-solid fa-robot"></i>AI Coach</a>
+      <a href="{{ url_for('workout.index') }}"     class="nav-item">  <i class="fa-solid fa-dumbbell"></i>Workouts</a>
+      <a href="{{ url_for('nutrition.index') }}"   class="nav-item">  <i class="fa-solid fa-utensils"></i>Nutrition</a>
+      <a href="{{ url_for('calculators.index') }}" class="nav-item">  <i class="fa-solid fa-calculator"></i>Calculators</a>
+      <a href="{{ url_for('profile.view') }}"      class="nav-item">  <i class="fa-regular fa-user"></i>Profile</a>
+      <hr class="mx-3">
+      <a href="{{ url_for('auth.logout') }}"       class="nav-item text-danger-nav"> <i class="fa-solid fa-right-from-bracket"></i>Logout</a>
+    </nav>
+  </div>
+</div>
+{% endif %}
+
+<!-- ═══════════════════════════ MAIN CONTENT ═════════════════════════════ -->
+<main class="fb-main {% if current_user.is_authenticated %}with-sidebar{% endif %}">
+
+  <!-- Flash messages -->
+  {% with messages = get_flashed_messages(with_categories=true) %}
+    {% if messages %}
+      <div class="flash-container">
+        {% for category, message in messages %}
+          <div class="alert alert-{{ 'danger' if category == 'error' else category }} alert-dismissible fade show fb-alert" role="alert">
+            <i class="fa-solid {% if category == 'success' %}fa-circle-check{% elif category == 'danger' %}fa-circle-xmark{% else %}fa-circle-info{% endif %} me-2"></i>
+            {{ message }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% endwith %}
+
+  {% block content %}{% endblock %}
+</main>
+
+<!-- Bootstrap 5 JS -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.3/dist/chart.umd.min.js"></script>
+<!-- Marked.js (markdown rendering) -->
+<script src="https://cdn.jsdelivr.net/npm/marked@12.0.0/marked.min.js"></script>
+<!-- Custom JS -->
+<script src="{{ url_for('static', filename='js/app.js') }}"></script>
+{% block extra_js %}{% endblock %}
+
+</body>
+</html>
