@@ -1,0 +1,93 @@
+{
+  "name": "Fitness Buddy",
+  "description": "AI-Powered Fitness and Nutrition Assistant built using IBM watsonx.ai, IBM Granite Models, Python Flask, and IBM Cloud. The application provides personalized workout plans, Indian meal recommendations, AI-powered fitness coaching, health calculators, and progress tracking.",
+  "version": "1.0.0",
+  "author": "Yogesh Chauhan",
+
+
+  "technologies": [
+    "Python Flask",
+    "IBM watsonx.ai",
+    "IBM Granite Models",
+    "IBM Cloud ",
+    "IBM BOB",
+    "SQLite",
+    "HTML5",
+    "CSS3",
+    "Bootstrap 5",
+    "JavaScript"
+  ],
+
+  "features": [
+    "AI Fitness Coach",
+    "Personalized Workout Plans",
+    "Indian Meal Recommendations",
+    "BMI Calculator",
+    "BMR Calculator",
+    "TDEE Calculator",
+    "Water Intake Tracker",
+    "Nutrition Planner",
+    "Workout Planner",
+    "Progress Tracking",
+    "User Authentication",
+    "AI Chatbot using IBM Granite"
+  ],
+
+  "keywords": [
+    "fitness",
+    "nutrition",
+    "health",
+    "ai",
+    "ibm",
+    "watsonx",
+    "granite",
+    "python",
+    "flask",
+    "chatbot",
+    "workout",
+    "meal-planner"
+  ],
+
+  "scripts": {
+    "postdeploy": "echo \"Fitness Buddy deployed successfully.\""
+  },
+
+  "env": {
+    "SECRET_KEY": {
+      "description": "Flask Secret Key",
+      "required": true
+    },
+    "IBM_API_KEY": {
+      "description": "IBM Cloud API Key",
+      "required": true
+    },
+    "IBM_PROJECT_ID": {
+      "description": "IBM watsonx.ai Project ID",
+      "required": true
+    },
+    "IBM_WATSONX_URL": {
+      "description": "IBM watsonx.ai Service URL",
+      "required": true,
+      "value": "https://eu-gb.ml.cloud.ibm.com"
+    },
+    "IBM_GRANITE_MODEL_ID": {
+      "description": "IBM Foundation Model",
+      "required": true,
+      "value": "meta-llama/llama-3-3-70b-instruct"
+    },
+    "DATABASE_URL": {
+      "description": "SQLite Database URL",
+      "required": false,
+      "value": "sqlite:///fitness_buddy.db"
+    }
+  },
+
+  "formation": {
+    "web": {
+      "quantity": 1,
+      "size": "basic"
+    }
+  },
+
+  "stack": "container"
+}
